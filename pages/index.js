@@ -96,7 +96,7 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.grid}>
           <h1 className={styles.title}>Cart Tracker</h1>
-          <h5>
+          <h5 className={styles.description}>
             Local Time : {currentZone?.formatted} {currentZone?.zoneName}
           </h5>
           {data?.map((item) => {
@@ -108,9 +108,9 @@ export default function Home() {
                 onClick={() => removeFromCart(id)}
                 className={styles.card}
               >
-                <p>{name}</p>
-                <p>Color : {color}</p>
-                <p>Current Time : {timeZone}</p>
+                <p className={styles.item}>{name}</p>
+                <p><strong>Color :</strong> {color}</p>
+                <p><strong>Current Time :</strong> {timeZone}</p>
               </a>
             );
           })}
@@ -125,6 +125,7 @@ export default function Home() {
             </a>
           ) : (
             <form className={styles.cardForm} onSubmit={addToCart}>
+              Enter new item details below : <br/><br/> 
               <input
                 className={styles.cardInput}
                 type="text"
@@ -149,6 +150,7 @@ export default function Home() {
                 name="timeZone"
                 onChange={(event) => {
                   setCart({ ...cart, timeZone: event.target.value });
+                  getCurrentTime(event.target.value);
                 }}
                 placeholder="Timezone"
               >
@@ -159,7 +161,7 @@ export default function Home() {
                     </option>
                   );
                 })}
-              </select>
+              </select><br/><br/>
               <button className={styles.cardInput} type="submit">
                 Add to cart
               </button>
