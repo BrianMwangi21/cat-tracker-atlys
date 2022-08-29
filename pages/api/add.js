@@ -1,17 +1,19 @@
+import redis from "../../lib/redis";
+import { v4 as uuidv4 } from "uuid";
+
 export default async(req, res) => {
-  if(!req.query.cart) {
-    return res.status(400).send("cart parameter required");
+  if (!req.body) {
+    return res.status(400).send("Body cannot be empty");
   }
 
-  let cart = encodeURI(req.query.cart)
+  const id = uuidv4();
+  const cart = {
+    id: id,
+    name: req.body.name,
+    color: req.body.color,
+    timeZone: req.body.timeZone,
+  };
 
-  const token = "AXf1ASQgMjZjNDBjZmMtYjUwZi00MmViLWJkOWYtZmEyYmFjMTA0ODgyMWIxNzYxZmYxNmFhNDFhMjkyOGNhZjBmMTk0M2IwMzc=";
-  const url = "https://eu2-mature-locust-30709.upstash.io/lpush/cart/" + cart + "?_token=" + token;
-
-  return fetch(url)
-          .then(response => response.json())
-          .then(data => {
-            let result = JSON.stringify(data.result);
-            return res.status(200).json(result);
-          })
-}
+  let response = await redis.hset("cart", id, JSON.stringify(cart));
+  return res.status(200).json(response);
+};
