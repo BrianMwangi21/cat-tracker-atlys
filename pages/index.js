@@ -1,10 +1,12 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export default function Home() {
   const [data, setData] = useState([]);
+  const [zones, setZones] = useState([]);
+  const [currentZone, setCurrentZone] = useState({});
   const [loading, setLoading] = useState(false);
   const [cart, setCart] = useState({
     name: "",
@@ -53,9 +55,32 @@ export default function Home() {
       });
   };
 
+  const getTimeZones = () => {
+    fetch(
+      "http://api.timezonedb.com/v2.1/list-time-zone?key=S60TMFN797IZ&format=json"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setZones(data?.zones);
+      });
+  };
+
+  const getCurrentTime = (zone) => {
+    fetch(
+      "http://api.timezonedb.com/v2.1/get-time-zone?key=S60TMFN797IZ&format=json&by=zone&zone=" +
+        zone
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setCurrentZone(data);
+      });
+  };
+
   useEffect(() => {
     setLoading(true);
     loadCart();
+    getTimeZones();
+    getCurrentTime("Africa/Nairobi");
   }, []);
 
   if (!data) return "Loading....";
@@ -70,13 +95,12 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.grid}>
-          <h1 className={styles.title}>
-            Cart Tracker - Atlys Challenge
-            <br />
-            <br />
-          </h1>
+          <h1 className={styles.title}>Cart Tracker</h1>
+          <h5>
+            Local Time : {currentZone?.formatted} {currentZone?.zoneName}
+          </h5>
           {data?.map((item) => {
-            const {id, name, color, timeZone} = JSON.parse(item);
+            const { id, name, color, timeZone } = JSON.parse(item);
             return (
               <a
                 href="#"
@@ -108,7 +132,7 @@ export default function Home() {
                 onChange={(event) => {
                   setCart({ ...cart, name: event.target.value });
                 }}
-                placeholder="Enter name of product here..."
+                placeholder="Name"
               />
               <input
                 className={styles.cardInput}
@@ -117,18 +141,28 @@ export default function Home() {
                 onChange={(event) => {
                   setCart({ ...cart, color: event.target.value });
                 }}
-                placeholder="Enter color of product here..."
+                placeholder="Color"
               />
-              <input
+              <select
                 className={styles.cardInput}
                 type="text"
                 name="timeZone"
                 onChange={(event) => {
                   setCart({ ...cart, timeZone: event.target.value });
                 }}
-                placeholder="Enter your timezone here..."
-              />
-              <button type="submit">Add to cart</button>
+                placeholder="Timezone"
+              >
+                {zones?.map((zone) => {
+                  return (
+                    <option key={zone.zoneName} value={zone.zoneName}>
+                      {zone.zoneName}
+                    </option>
+                  );
+                })}
+              </select>
+              <button className={styles.cardInput} type="submit">
+                Add to cart
+              </button>
             </form>
           )}
         </div>
